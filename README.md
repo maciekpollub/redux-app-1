@@ -1,0 +1,1 @@
+This is self-educational repo on react with redux.
