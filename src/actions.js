@@ -1,36 +1,31 @@
-export const ADD_TODO = 'ADD_TODO';
-export const TOGGLE_TODO = 'TOGGLE_TODO';
-export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER';
 
-//action types have been defined...
+export const ADD_TODO = "ADD_TODO";
+export const TOGGLE_TODO = "TOGGLE-TODO";
+export const SET_VISIBILITY_FILTER = "SET_VISIBILITY_FILTER";
 
 export const visibilityFilters = {
-  SHOW_ALL: 'SHOW_ALL',
-  SHOW_COMPLETED: 'SHOW_COMPLETED',
-  SHOW_ACTIVE: 'SHOW_ACTIVE'
+  SHOW_ALL: "SHOW_ALL",
+  SHOW_COMPLETED: "SHOW_COMPLETED",
+  SHOW_ACTIVE: "SHOW_ACTIVE"
 }
 
-// ... and one additional constant object so that we write less...
-
-export function addTodo(text) {
-  return {
+export function addTodo(text){
+  return{
     type: ADD_TODO,
-    text: text
+    text
   }
 }
 
-export function toggleTodo(id) {
-  return {
+export function toggleTodo(index){
+  return{
     type: TOGGLE_TODO,
-    id: id
+    index
   }
 }
 
-export function setVisibilityFilter(filter) {
-  return {
+export function setVisibilityFilter(filter){
+  return{
     type: SET_VISIBILITY_FILTER,
-    filter: filer
+    filter
   }
 }
-
-// so called action creators have been defined...

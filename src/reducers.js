@@ -39,6 +39,21 @@ function todoApp(state = initialState, action) {
   }
 }
 
+function todos(state = [], action){
+  switch(action.type){
+    case ADD_TODO:
+    return{
+      ...state,
+      todos: [...state.todos, action.text]
+    }
+    case TOGGLE_TODO:
+    return{
+      ...state,
+      
+    }
+  }
+}
+
 /*above we have an introductory/background reducer, which renders introductory state;
 this could be written longer (witout es6 default arguments syntax):
 function todoApp (state, action) {
@@ -48,3 +63,5 @@ function todoApp (state, action) {
   return state;
 }
 */
+
+
