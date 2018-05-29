@@ -1,106 +1,219 @@
 import React, { Component } from 'react';
 
 class App extends Component {
-  
-  
-  
-  
-  
+
+    
   render() {
   
     const roads = [
-     "P1-P2", "P1-P3", "P2-P5", "P5-P6", "P6-P7", "P7-P8",
-      "P8-P9", "P8-P10", "P11-P9", "P11-P4"
-    ]  
-  
+      "P1-P2",
+      "P2-P3",
+      "P3-P5",
+      "P2-P4",
+      "P4-P3"
+    ]
+    
     function buildGraph(edges){
-      let graph = Object.create(null);
-      function addEdge( from, to) {
+      let graph = {};
+      function addEdge(from, to){
         if (graph[from] == null) {
           graph[from] = [to]
         } else {
-          graph[from].push(to);
+          graph[from].push(to)
         }
       }
-      for (let [from, to] of edges.map(r => r.split("-"))) {
+      for (let [from, to] of edges.map(e => e.split("-"))){
         addEdge(from, to);
         addEdge(to, from);
       }
       return graph;
     }
-    const roadGraph = buildGraph(roads);
 
+    const roadGraph = buildGraph(roads);
     
-    class VillageState {
-      constructor(place, parcels){
-        this.place = place;
-        this.parcels = parcels;
+    class VillageState{
+      constructor(rPlace, undelParcels){
+        this.rPlace = rPlace;
+        this.undelParcels = undelParcels;
       }
       move(destination) {
-        if (!roadGraph(this.place).includes(destination)) {
-          return this;//if there is no connecion from P3 to P5, say, we stay at P3, nothing changes...
+        if (!roadGraph[this.rPlace].includes(destination)){
+          return this;
         } else {
-          let parcels = this.parcels.map(p => {
-            if (p.place != this.place) return p;// if the place of a certain parcel isn't the same as the place of the robot, nothing changes..
-            return {place: destination, address: p.address}//the place of a spotted parcel is destination and the parcel's address has not changed
-          }).filter(p => p.place != p.address);
-          return new VillageState(destination, parcels);
+          let undelParcels = this.undelParcels.map(p => {
+            if (p.place !== this.rPlace) {
+              return p;
+            } else {
+              return {place: destination, address: p.address};
+              }
+            }  
+          ).filter(p => (
+            p.address !== p.place
+          ));
+         return new VillageState(destination, undelParcels); 
         }
-      }
+      };
     }
 
-    function runRobot(state, robot, memory) {
-      for(let turn = 0; ; turn++){
-        if(state.parcels.length === 0){
-          console.log(`Cong, done in ${turn} turns`);
-          break;
+    VillageState.random = function (parcelCount) {
+      let undelParcels = [];
+        let rPlace = randomPick(Object.keys(roadGraph));
+        for (let i = 0; i < parcelCount; i++) {
+          let address = randomPick(Object.keys(roadGraph));
+          let place;
+          do {
+            place = randomPick(Object.keys(roadGraph))
+          } while (
+            address === place
+          );
+          undelParcels.push({
+            place: place,
+            address: address
+          })
         }
-        let action = robot(state, memory);
-        state = state.move(action.direction);
-        memory = action.memory;//looks like robot is a function returning an object with properties: direction, memory..
-      }
+        return new VillageState(rPlace, undelParcels);
     }
-
-   /* function randomPick(array){
+//----------------------------------------------------------------------------
+    function randomPick(array) {
       let choice = Math.floor(Math.random() * array.length);
       return array[choice];
     }
 
-    function randomRobot(state){
-      return{
-        direction: randomPick(roadGraph[state.place])
+    function randomRobot(state) {
+      return {direction: randomPick(roadGraph[state.rPlace])};
+    }
+
+    function runRobot(state, robotType) {
+      for (let turn = 0; ; turn++) {
+        if (state.undelParcels.length === 0) {
+          console.log(`Congratulations, you have finished in ${turn} steps`);
+          break;
+        }
+        let action = robotType(state);
+        state = state.move(action.direction);
       }
     }
 
-
-
-
-
-    VillageState.random = function (parcelCount = 5) {
-      let parcels = [];
-      for (let i = 0; i < parcelCount; i++) {
-        let address = randomPick(Object.keys(roadGraph));
-        let place;
-        do {
-          place = randomPick(Object.keys(roadGraph));
-        } while (place == address);
-        parcels.push({place: place,
-        address: address})
-            }
-    }
-*/
-
-    const mailRoute = ["P1","P3","P1", "P2", "P5", "P6", "P7", "P8","P10", "P8","P9", "P11", "P4" ];
-
-    function routeRobot(state, memory) {
-      if (memory.length === 0) {
+    /*runRobot(VillageState.random(), randomRobot);---------------------------*/
+  
+    const mailRoute = [ "P1" , "P2" , "P4" , "P3" , "P5", "P3", "P4", "P2", "P1" ];
+    function fixedRouteRobot(state, memory) {
+      /*if (memory.length === 0) {
         memory = mailRoute;
+      }*/
+      return {
+        direction: memory[0],
+        memory: memory.slice(1)
+      };
+    }
+    function runFRobot(state, robotType, memory) {
+      for (let turn = 0; turn < 1000; turn++) {
+        if (state.undelParcels.length < 2) {
+          console.log(`Congratulations, you have finished in ${turn} steps`);
+          break;
+        }
+        let action = robotType(state, memory);
+        state = state.move(action.direction);
+        memory = action.memory;
       }
-      return {direction: memory[0], memory: memory.slice(1)};
+    }
+    
+    
+   /* runFRobot(VillageState.random(10), fixedRouteRobot, mailRoute);--------------*/
+
+    function findOptRoute(graph, from, to){
+      let work = [{at: from, route: []}];
+      for (let i = 0; i < work.length; i++){
+        let {at, route} = work[i];
+        for (let place of graph[at]) {
+          if (place === to ) {
+            return route.concat(place);
+          }
+          if (!work.some(e => e.at === place)){
+            work.push({at: place, route: route.concat(place)})
+          }
+        }
+      }
     }
 
+    function goalOrientedRobot(state, route) {
+      if (route.length === 0) {
+        let parcel = state.undelParcels[0];
+      if (parcel.place !== state.rPlace) {
+        route = findOptRoute(roadGraph, state.rPlace, parcel.place)
+      } else {
+        route = findOptRoute(roadGraph, state.rPlace, parcel.address)
+      }
+    }
+      return{
+        direction: route[0],
+        memory: route.slice(1)
+      }
+    }
 
-    function findRoute(graph, from, to){
+    
+  function runGoalOrientedRobot(state, robotType, route) {
+    for (let turn = 0; turn < 1000; turn++) {
+      if (state.undelParcels.length === 0) {
+        console.log(`Congratulatins, you have finished the task in ${turn} turns...`);
+        break;
+      }
+      let action = goalOrientedRobot(state, route);
+      state = state.move(action.direction);
+      route = action.memory;
+    }
+  }
+  let initState = VillageState.random(10);  
+  runGoalOrientedRobot(initState, goalOrientedRobot, findOptRoute(roadGraph, "P1", initState.undelParcels[0].place));
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+
+
+
+   /* function findRoute(graph, from, to){
       let work = [{at: from, route: []}];
       for (let i = 0; i < work.length; i++){
         let {at, route} = work[i];//in ES5: let at = from; let route = [];
@@ -115,13 +228,38 @@ class App extends Component {
       }
     }
 
-  let way = findRoute(roadGraph, "P5", "P9");
-  console.log(way);
+  
+
+    function goalOrientedRobot({place, parcels}, route) {
+      if (route.length == 0) {//in case the route was empty, we should have walked along the edges indicated in the route..
+        let parcel = parcels[0];
+        if (parcel.place !== place){
+          route = findRoute(roadGraph, place, parcel.place);
+        } else {
+          route = findRoute(roadGraph, place, parcel.address);
+        }//so, if the particular parcel is at another place than the robot, we move to that place to take it, otherwise we move to the place the parcel is addressed to.. 
+      }
+      return {direction: route[0], memory: route.slice(1)};
+    }
 
 
 
 
-    
+
+    function startRobot(state, robot) {
+      for (let turn = 0; ; turn++) {
+        if(state.parcels.length === 0){
+          console.log(`Congrats, done in ${turn} turns`);
+          break;
+        }
+        let action = robot(state);
+        state = state.move(action.direction);
+    }
+  }
+
+    startRobot(VillageState.random(), goalOrientedRobot);
+
+    */
     return (
       <div className="App">
         <h1>Robot-project from Eloquent JavaScript</h1>
