@@ -4,7 +4,7 @@ class App extends Component {
 
     
   render() {
-  
+    "use strict"
     const roads = [
       "P1-P2",
       "P2-P3",
@@ -96,11 +96,11 @@ class App extends Component {
 
     /*runRobot(VillageState.random(), randomRobot);---------------------------*/
   
-    const mailRoute = [ "P1" , "P2" , "P4" , "P3" , "P5", "P3", "P4", "P2", "P1" ];
+    const mailRoute = [ "P1", "P2" , "P4" , "P3" , "P5", "P3", "P4", "P2", "P1" ];
     function fixedRouteRobot(state, memory) {
-      /*if (memory.length === 0) {
+      if (memory.length === 0) {
         memory = mailRoute;
-      }*/
+      }
       return {
         direction: memory[0],
         memory: memory.slice(1)
@@ -163,19 +163,147 @@ class App extends Component {
       route = action.memory;
     }
   }
-  let initState = VillageState.random(10);  
-  runGoalOrientedRobot(initState, goalOrientedRobot, findOptRoute(roadGraph, "P1", initState.undelParcels[0].place));
+  let initialState = VillageState.random(10);  
+  /*runGoalOrientedRobot(initialState, goalOrientedRobot, findOptRoute(roadGraph, "P1", initialState.undelParcels[0].place));*/
+/*----------------------------------------------------Exercise 1 -----------------------------------*/
+  function doTask(state, robot, memory) {
+    for (let turn = 0; turn < 1000; turn++) {
+      if (state.undelParcels.length === 0) {
+        let score = turn;
+        return score;
+      }
+      let action = robot(state, memory)
+      state = state.move(action.direction);
+      memory = action.memory;
+    }
+  }
+
+  function compareRobots(robot1, robot2, startingMemory) {
+    let array1=[];
+    let array2=[];
+    for (let i = 0; i < 100; i++) {
+      let entryState = VillageState.random(10);
+      let score1 = doTask(entryState, robot1, startingMemory);
+      let score2 = doTask(entryState, robot2, startingMemory);
+      array1.push(score1);
+      array2.push(score2);         
+    }
+    let sum1 =0;
+    let sum2 = 0;
+    for (let j = 0; j < 100; j++) {
+      sum1 += array1[j];
+      sum2 += array2[j];
+    }
+    console.log(`The first robots avarage result is ${sum1 / 100} whereas the second: ${sum2 / 100}.`) 
+  }
+  
+
+   /* compareRobots(goalOrientedRobot, fixedRouteRobot, mailRoute);*/
     
+    /*---------------------------------------------Exercise 2--------------------------------------*/
+
+    function routesAssessingRobot(state, route) {
+      if (route.length === 0) {
+        let routes = state.undelParcels.map(p => {
+          if (p.place !== state.rPlace) {
+            return {
+              route: findOptRoute(roadGraph, state.rPlace, p.place),
+              pickUp: true
+            }
+          } else {
+              return {
+                route: findOptRoute(roadGraph, state.rPlace, p.address),
+                pickUp: false
+              }
+            }
+          }
+        );
+        function score({route, pickUp}) {
+          return (pickUp ? 0.5 : 0) - route.length;
+        }
+        route = routes.reduce((a,b) => score(a) > score(b) ? a : b).route;  
+      }
+      return {
+        direction: route[0],
+        memory: route.slice(1)
+      };
+    }
+    /*runGoalOrientedRobot(VillageState.random(10), routesAssessingRobot, []);
+
+    compareRobots(goalOrientedRobot, routesAssessingRobot, mailRoute);
+
+    function promptDirection(question) {
+      let result = prompt(question);
+      if (result.toLowerCase() === "left") return "L";
+      if (result.toLowerCase() === "right") return "R";
+      throw new Error ("You introduce invalid direction: " + result);
+    }
+    function look() {
+      if (promptDirection("Which way?") === "L") {
+        return "a house";
+      } else {
+        return "two angry bears...";
+      }
+    }
+    try {
+      console.log("You see", look());
+    } catch (error) {
+      console.log("Something went wrong: " + error)
+    }*/
+     
+   const accounts = {
+     a: 1000,
+     b: 200,
+     c: 500
+   };
     
+   function getAmount(){
+     let amount = prompt("Enter the quantity you want to transfer:");
+     if(amount <= 0) {
+       throw new Error(`The quantity has to be positive.`);
+     }
+     return Number(amount);
+   }
+
+   function getWithdrawalAccount() {
+     let wAccountName = prompt("Enter an account name you want to withdraw money from:");
+     if (!accounts.hasOwnProperty(wAccountName)) {
+       throw new Error(`No such account: ${wAccountName}`);
+     }
+     return wAccountName;
+   }
+
+   function getAssignmentAccount() {
+     let aAccountName = prompt("Enter the account name you want to transfer money to:")
+     if (!accounts.hasOwnProperty(aAccountName)) {
+       throw new Error(`No such account: ${aAccountName}`);
+     }
+     return aAccountName;
+   }
+
+  function transfer() {
+    let amount = getAmount();
+    let from = getWithdrawalAccount();
+    let to = getAssignmentAccount();
+      if (accounts[from] < amount) {
+        console.log("Operation disallowed....");
+        return;
+      };
+     let progress = 0;
+     try {
+       accounts[from] -= amount;
+       progress = 1;
+       accounts[to] += amount;
+       progress = 2;
+     } finally {
+       if(progress === 1){
+         accounts[to] += amount;
+       }
+     }
+    }
     
-    
-    
-    
-    
-    
-    
-    
-    
+    transfer();
+    console.log(accounts);
     
     
     
