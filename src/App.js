@@ -250,7 +250,7 @@ class App extends Component {
     } catch (error) {
       console.log("Something went wrong: " + error)
     }*/
-   /*  
+   /*
    const accounts = {
      a: 1000,
      b: 200,
@@ -304,45 +304,28 @@ class App extends Component {
     
     transfer();
     console.log(accounts);
-    
     */
+ 
 
-    function writeYourName(name) {
-      let word = name.toUpperCase();
-      switch(word) {
-        case "JAN":
-          return "J"
-          break;
-        case "MICHAŁ":
-          return "M"
-          break;
-        default:
-        throw new Error("Unfortunatelly, I can not recongnise name " + word +".");
-      }
-    }
-    function sentence (name1) {
-      if (writeYourName(name1)=== "J") {
-        return "Hi Jan..."
-      } else {
-        return "Hi Michałj..."
-      }
-    }
-    try {
-      alert(sentence("Jan"))
-    } catch (error) {
-      alert ("sth went wrong...")
-    }
-    
-    
-    
-    
-    
    
+
+
+let choseTheNumber = new Promise(function(resolve, reject) {
+  let number = Math.floor(Math.random() * 10); 
+  console.log(number);
+  if (number < 5) {
+    resolve("small");
+  } else {
+    reject("big");
+  }
+})
    
-   
-   
-   
-   
+choseTheNumber.then(function(fromResolved){
+  alert(`The number is ${fromResolved}.`);
+}).catch(function(fromRejected){
+  alert(1`The number is ${fromRejected}`)
+})
+  
    
    
    
