@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+
 class App extends Component {
 
     
@@ -306,36 +307,60 @@ class App extends Component {
     console.log(accounts);
     */
  
+let displayDiv = document.getElementById("displayDiv");
+/*let processJSON = function(json) {
+  let result = JSON.parse(json);
+  result.forEach(elem => {
+    let div = document.createElement("div");
+    div.innerHTML = elem.data + " the price of gold was: " + elem.cena;
+    displayDiv.appendChild(div);
+  })
+}
+let displayError = function(error) {
+  displayDiv.innerHTML = error;
+}
 
-   
+let xhr = new XMLHttpRequest();
+xhr.open('GET', "http://api.nbp.pl/api/cenyzlota/2018-06-01/2018-06-10/?format=json");
 
-
-let choseTheNumber = new Promise(function(resolve, reject) {
-  let number = Math.floor(Math.random() * 10); 
-  console.log(number);
-  if (number < 5) {
-    resolve("small");
-  } else {
-    reject("big");
+xhr.onload = function() {
+  if (xhr.status === 200){
+    processJSON(xhr.response)
   }
-})
-   
-choseTheNumber.then(function(fromResolved){
-  alert(`The number is ${fromResolved}.`);
-}).catch(function(fromRejected){
-  alert(1`The number is ${fromRejected}`)
-})
-  
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
+};
+
+xhr.onerror = function() {
+  displayError("..unable to load..");
+};
+
+xhr.send();*/
+function getJSONAsync(url){
+  return new Promise(function(resolve, reject) {
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        resolve(xhr.response);
+      } else {
+        reject("..unable to load");
+      }
+    }
+    xhr.onerror = () => {
+      reject("..unalabe to load again...")
+    };
+    xhr.send(); 
+  });
+}
+   getJSONAsync("http://api.nbp.pl/api/cenyzlota/2018-06-01/2018-06-10/?format=json").then(json => {
+     let result = JSON.parse(json);
+     result.forEach(elem => {
+       let div = document.createElement("div");
+       div.innerHTML = `${elem.data} the cost of gold was ${elem.cena}`;
+       displayDiv.appendChild(div);
+     });
+   }).catch(error => {
+     displayDiv.innerHTML = error;
+   });
    
    
    
